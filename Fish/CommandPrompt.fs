@@ -7,29 +7,28 @@ module CommandPrompt =
  
     /// Allows multiple commands to be piped to a single instance of cmd.exe,
     /// similar to the way a sequence of commands can be run from a batch file.
-    let runCmd (cmds : string list) =
+    let runCmd startLocation (cmds : string list) =
+        let errerOut = new Collections.Generic.List<string> ()
+        let outOut = new Collections.Generic.List<string> ()
+
         use p = new Process ()
  
         p.StartInfo.UseShellExecute <- false
         p.StartInfo.RedirectStandardOutput <- true
         p.StartInfo.RedirectStandardError <- true
-        p.StartInfo.WorkingDirectory <- @"C:\"
+        p.StartInfo.WorkingDirectory <- startLocation
         p.StartInfo.FileName <- Path.Combine (Environment.SystemDirectory, "cmd.exe")
     
         p.StartInfo.RedirectStandardInput <- true
- 
-        let outputErrorHandler (outLine : DataReceivedEventArgs) =
-            Console.WriteLine outLine.Data
- 
-        p.OutputDataReceived.Add (outputErrorHandler)
-        p.ErrorDataReceived.Add (outputErrorHandler)
- 
+        
+        p.OutputDataReceived.Add (fun x -> outOut.Add x.Data)
+        p.ErrorDataReceived.Add (fun x -> errerOut.Add x.Data)
         p.Start () |> ignore
         p.BeginOutputReadLine ()
         p.BeginErrorReadLine ()
  
-        cmds 
-        |> List.iter p.StandardInput.WriteLine
- 
+        cmds |> List.iter p.StandardInput.WriteLine
+
         p.StandardInput.WriteLine "exit"
         p.WaitForExit ()
+        (List.ofSeq outOut, List.ofSeq errerOut)
