@@ -2,9 +2,9 @@
 open Fish.CommandPrompt
 
 
-let tomp = [ "echo \"steve\" "; "dir /b"; "cd Windows" ] |> runCmd @"C:\"
+let tomp = "echo \"steveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteveteve\" " |> runCmd @"C:\"
 match tomp with
-| CommandOutput.Success outputs -> List.iter (printfn "%s") outputs
+| CommandOutput.Success outputs -> List.iter (fun (x : string) -> Console.WriteLine x) outputs
 | CommandOutput.Failure message -> Console.WriteLine message
 
 Console.ReadLine () |> ignore

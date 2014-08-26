@@ -11,12 +11,10 @@ module CommandPrompt =
         | Success of string list
         | Failure of string
 
-    /// Allows multiple commands to be piped to a single instance of cmd.exe,
-    /// similar to the way a sequence of commands can be run from a batch file.
-    let runCmd startLocation (cmds : string list) =
+    /// Allows a command line command to be run simply through F#, outputs either the output of the command or an error message
+    let runCmd startLocation (cmd : string) =
         let errorString = new StringBuilder ()
         let outOut = new List<string> ()
-
         use p = new Process ()
  
         p.StartInfo.UseShellExecute <- false
@@ -30,23 +28,18 @@ module CommandPrompt =
 
         p.OutputDataReceived.Add (fun x -> outOut.Add x.Data)
 
-        //TODOES make it figure out which command ruined everything, make it wait 
-
         p.ErrorDataReceived.Add (fun x -> errorString.Append x.Data |> ignore)
         
         p.Start () |> ignore
         p.BeginOutputReadLine ()
         p.BeginErrorReadLine ()
  
-        for cmd in cmds do
-            match errorString.Length with
-            | 0 -> p.StandardInput.WriteLine cmd
-            | _ -> ()
+        p.StandardInput.WriteLine cmd
 
         p.StandardInput.WriteLine "exit"
         p.WaitForExit ()
 
-        //TODOES isolate and remove command inputs here and organize the outputs by command
+        outOut.RemoveAt 0 //removes the output line created by inputting the command string
 
         match errorString.Length with
         | 0 -> CommandOutput.Success(List.ofSeq outOut)
