@@ -41,6 +41,6 @@ module CommandPrompt =
 
         outOut.RemoveAt 0 //removes the output line created by inputting the command string
 
-        match errorString.Length with
-        | 0 -> CommandOutput.Success(List.ofSeq outOut)
-        | _ -> CommandOutput.Failure(errorString.ToString ())
+        if errorString.ToString() |> String.IsNullOrEmpty then 
+            CommandOutput.Success(List.ofSeq outOut)
+        else CommandOutput.Failure(errorString.ToString ())
